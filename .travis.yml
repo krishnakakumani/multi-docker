@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+  
+before_install:
+  - docker build -t kotinephew/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run kotinephew/react-test npm test -- --coverage
+  
+after_success:
+  - docker build -t kotinephew/multi-client ./client
+  - docker build -t kotinephew/multi-nginx ./nginx
+  - docker build -t kotinephew/multi-server ./server
+  - docker build -t kotinephew/multi-worker ./worker
+  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push kotinephew/multi-client
+  - docker push kotinephew/multi-nginx
+  - docker push kotinephew/multi-server
+  - docker push kotinephew/multi-worker
+  
+  
